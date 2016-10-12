@@ -28,57 +28,130 @@ batchShow    = ~showProgress;
 
 %% scan info
 
-NIFTI_file_name_F_upper = '20151012_143006t1vibedixontrap4bh320s004a1001.nii.gz';
-NIFTI_file_name_W_upper = '20151012_143006t1vibedixontrap4bh320s005a1001.nii.gz';
-NIFTI_file_name_F_lower = '20151012_143006t1vibedixontrap4bh320s009a1001.nii.gz';
-NIFTI_file_name_W_lower = '20151012_143006t1vibedixontrap4bh320s010a1001.nii.gz';
+NIFTI_path = 'C:\Users\addis\Google Drive\Documents\MastersWork\ABDOMEN_ABD_20151012_143006_834000';
+NIFTI_file_name_F_upper = '20151012_143006t1vibedixontrap4bh320s004a1001.nii';
+NIFTI_file_name_W_upper = '20151012_143006t1vibedixontrap4bh320s005a1001.nii';
+NIFTI_file_name_F_lower = '20151012_143006t1vibedixontrap4bh320s009a1001.nii';
+NIFTI_file_name_W_lower = '20151012_143006t1vibedixontrap4bh320s010a1001.nii';
 
+% Take the filenames and add the base path to the beginning
+NIFTI_file_name_F_upper = strcat(NIFTI_path,'\',NIFTI_file_name_F_upper);
+NIFTI_file_name_W_upper = strcat(NIFTI_path,'\',NIFTI_file_name_W_upper);
+NIFTI_file_name_F_lower = strcat(NIFTI_path,'\',NIFTI_file_name_F_lower);
+NIFTI_file_name_W_lower = strcat(NIFTI_path,'\',NIFTI_file_name_W_lower);
+
+% These dimensions come from the NIFTI file. Call load_nii_hdr(FILENAME).
+% The struct contains a dime struct with a pixdim array. pixdim[1:3] is
+% space and returns the below. Is this millimeters then?
 voxelSize_upper = [1.40625, 1.40625, 2.5];
+
+% Where did this number come from? So it means that the voxel volume is 20%
+% more?
 interslice_spacing_fraction = 0.2;
+
+% Volume is simply the X*Y*Z of each voxel times a factor. (??)
 voxelVolume_upper = prod(voxelSize_upper)*(1+interslice_spacing_fraction);
 voxelSize_lower = [1.40625, 1.40625, 2.5];
 voxelVolume_lower = prod(voxelSize_upper)*(1+interslice_spacing_fraction);
+
 X_shift = -round(2.2/voxelSize_lower(1));
 Y_shift = -round(9.1/voxelSize_lower(2));
 
+% The below parameters are for the UPPER images (water and fat)
+% -------------------------------------------------------------------------
+% Quite a bit of medical terms here that I am not entirely familiar with. I
+% would like to discuss these parameters and why they are set? In addition,
+% will they be the same for each Dixon scan? (What if the person is shifted
+% upwards a bit?)
 Z_L1_L2u    = 11; % middle of L1-L2 intervertebral disk slice (upper scan)
 %Z_L1        = 13;  % bottom of L1 vertebra slice
 Z_T4_T5t       = 112; % top of T4-T5 intervertebral disk slice
+
+% This is an array containing the valid slices that will be used in the
+% upper image. The first element is the largest Z value which means the
+% highest up on the chest.
 upperSlices = Z_T4_T5t:-1:Z_L1_L2u;
+
 Z_T8_T9d       = 55;  % top of T9 vertebra disk slice (use for bottom of thoracic cavity) 
+
+% These are the Z-values of where the heart is located from looking at a
+% sample NIFTI image. Where does the number 59, 70 come from? Presumably,
+% this would be the calculcated height of the heart but why is this
+% constant? Would it not change? Is it based on the voxel size too?
 % NOTE: diaphraim is at slices = 
 % - register from the bottom of T8
 heartMax    = Z_T4_T5t-70+1;
 heartBottom = Z_T4_T5t-59+1;
 diaphram    = Z_T4_T5t-Z_T8_T9d+1; 
+% -------------------------------------------------------------------------
 
+% These parameters are for the lower images (fat & water)
+% -------------------------------------------------------------------------
 % lowerOffset = 15;
+% This is the parameter that says what Z-level slice to end at (+2???)
 FH       = 18;  % widest slice of the formoral head
+
+% What are these parameters for? They are not used anywhere.
 Z_L5_S1b = 57;  % bottom of L5-S1 intervertebral disk slice
 %Z_L4_L5b = 69;   % bottom of L4 vertebra disk slice
 Z_L4_L5  = 75;   % middle of L4-L5 intervertebral disk slice
 Z_L3_L4  = 89;   % middle of L3-L4 intervertebral disk slice
+% Out of curiousity, how was this value found? I understand the others but
+% I don't understand where this is contained in the image
 UM       = 93;   % umbilicus (belly button)
 Z_L2_L3  = 103;  % middle of L2-L3 intervertebral disk slice
+
+% This is the parameter that says what Z-level slice to start at
 Z_L1_L2  = 115;  % middle of L1-L2 intervertebral disk slice
 %Z_L1_L2t    = 117; % top of L2 vertebra disk
+
+% This contains an array of numbers which indicate the slices that should
+% be included in the fat segmentation for the lower image.
 lowerSlices = Z_L1_L2:-1:FH+2;
+% -------------------------------------------------------------------------
+
+% What is this parameter used for? I see it gets added to Nslices but I'm
+% not sure of the functionality of it.
 repeatEstimators = 0;
 
+% The total number of slices is the number of upper slices and number of
+% lower slices added together. These are the valid slices that will be
+% examined. Not sure what repeatEstimators does.
 Nslices = length(upperSlices) + length(lowerSlices) + repeatEstimators;
+
+% Vector merges the upper slice IDs and lower slice IDS. This vector is
+% presumably ordered from top to bottom in Z-level slices. Top is the top
+% of the chest and bottom is the bottom of the abdomen.
 slices = [upperSlices, lowerSlices];
+
+% Levels vector indicates which image the slice is referring to. Level 1 is
+% the upper level. Level 2 is the lower level.
 levels(1:length(upperSlices))         = 1;
 levels(length(upperSlices)+1:Nslices) = 2;
+
+% This stores the voxel volume for each Z-level slice. For the upper image,
+% it is simply voxelVolume_upper. For lower image, it is simply
+% voxelVolume_lower.
+% This is redundant, because one could simply do an if statement to check
+% for the level and get it from there. However, I suspect Jason did this so
+% he could just write voxelVolumes for either upper/lower without having to
+% do an if statement over and over. (??)
 voxelVolumes(1:length(upperSlices))         = voxelVolume_upper;
 voxelVolumes(length(upperSlices)+1:Nslices) = voxelVolume_lower;
 
+% Is UM the Z-level of the belly button?
+% What is bellybutton variable representing (Y maybe??)
+% bbx is the belly button X maybe (??)
+% How is this information found? It is not apparent from the fat images
 % NOTE: belly button is from i = 130-122
 bellybutton = 130:122;
 bbx = 67;
 
 % parameter settings
+% What is this parameter?
 cutLineLength = 82;
 
+% What are these parameters?
 backgroundThreshold   = 10;
 vetoFactorF = 4.5;
 vetoFactorW = 3.5;
@@ -92,6 +165,7 @@ nbrThresholdsF = 7; %4; %7;
 nbrThresholdsW = 7; %4; %9;
 nbrThresholdsV = 7; %4; %7;
 
+% What is the strel object or purpose of it?
 seSCAT = strel('rectangle',[7,17]);  
 VATprelim      = 17;      % opening for preliminary VAT segmentation
 
@@ -134,6 +208,7 @@ niiFlo = load_nii(NIFTI_file_name_F_lower);
 niiWup = load_nii(NIFTI_file_name_W_upper);
 niiWlo = load_nii(NIFTI_file_name_W_lower);
 
+% Returns the size of the image (X x Y x Z)
 dims = size(niiFup.img);
 
 % initializations
@@ -168,7 +243,7 @@ for i = 1:Nslices
 % end
 % problem slice:
 %i = 16;
-i 
+%i <---- Not sure why this was uncommented and stand-alone -Addison 10/12/16 
 
 slice = slices(i);    
 level = levels(i);    
