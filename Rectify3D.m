@@ -7,10 +7,9 @@
 
 clear all, close all, clc;
 
-addpath(genpath(pwd))
-addpath('../../auxillary')
-addpath('../../auxillary/NIfTI_20140122')
-addpath('C:/spm/spm8')
+% get location of data from user
+dataPath = uigetdir(pwd,'Choose path of data...');
+
 
 % subject: MF0201
 % session: 1012151
@@ -18,20 +17,22 @@ addpath('C:/spm/spm8')
 
 %% scan info
 
-NIFTI_file_name_F_upper = '20151012_143006t1vibedixontrap4bh320s004a1001.nii.gz';
-NIFTI_file_name_W_upper = '20151012_143006t1vibedixontrap4bh320s005a1001.nii.gz';
-NIFTI_file_name_F_lower = '20151012_143006t1vibedixontrap4bh320s009a1001.nii.gz';
-NIFTI_file_name_W_lower = '20151012_143006t1vibedixontrap4bh320s010a1001.nii.gz';
+% append filenames to path of data
 
-NIFTI_file_name_F_upper_NII = 'T1_VIBE_DIXON_TRA_P4_BH_320_F_0004/20151012_143006t1vibedixontrap4bh320s004a1001.nii';
-NIFTI_file_name_W_upper_NII = 'T1_VIBE_DIXON_TRA_P4_BH_320_W_0005/20151012_143006t1vibedixontrap4bh320s005a1001.nii';
-NIFTI_file_name_F_lower_NII = 'T1_VIBE_DIXON_TRA_P4_BH_320_F_0009/20151012_143006t1vibedixontrap4bh320s009a1001.nii';
-NIFTI_file_name_W_lower_NII = 'T1_VIBE_DIXON_TRA_P4_BH_320_W_0010/20151012_143006t1vibedixontrap4bh320s010a1001.nii';
+NIFTI_file_name_F_upper = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_F_0004\20151012_143006t1vibedixontrap4bh320s004a1001.nii.gz');
+NIFTI_file_name_W_upper = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_0005\20151012_143006t1vibedixontrap4bh320s005a1001.nii.gz');
+NIFTI_file_name_F_lower = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_F_0009\20151012_143006t1vibedixontrap4bh320s009a1001.nii.gz');
+NIFTI_file_name_W_lower = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_0010\20151012_143006t1vibedixontrap4bh320s010a1001.nii.gz');
 
-NIFTI_file_name_F_upper_reslice = '20151012_143006t1vibedixontrap4bh320s004a1001_resliced.nii';
-NIFTI_file_name_W_upper_reslice = '20151012_143006t1vibedixontrap4bh320s005a1001_resliced.nii';
-NIFTI_file_name_F_lower_reslice = '20151012_143006t1vibedixontrap4bh320s009a1001_resliced.nii';
-NIFTI_file_name_W_lower_reslice = '20151012_143006t1vibedixontrap4bh320s010a1001_resliced.nii';
+NIFTI_file_name_F_upper_NII = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_F_0004\20151012_143006t1vibedixontrap4bh320s004a1001.nii');
+NIFTI_file_name_W_upper_NII = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_0005\20151012_143006t1vibedixontrap4bh320s005a1001.nii');
+NIFTI_file_name_F_lower_NII = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_F_0009\20151012_143006t1vibedixontrap4bh320s009a1001.nii');
+NIFTI_file_name_W_lower_NII = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_0010\20151012_143006t1vibedixontrap4bh320s010a1001.nii');
+
+NIFTI_file_name_F_upper_reslice = strcat(dataPath,'\20151012_143006t1vibedixontrap4bh320s004a1001_resliced.nii');
+NIFTI_file_name_W_upper_reslice = strcat(dataPath,'\20151012_143006t1vibedixontrap4bh320s005a1001_resliced.nii');
+NIFTI_file_name_F_lower_reslice = strcat(dataPath,'\20151012_143006t1vibedixontrap4bh320s009a1001_resliced.nii');
+NIFTI_file_name_W_lower_reslice = strcat(dataPath,'\20151012_143006t1vibedixontrap4bh320s010a1001_resliced.nii');
 
 voxelSize_up = [1.40625, 1.40625, 2.5];
 interslice_spacing_fraction = 0.2;
@@ -63,8 +64,6 @@ BupShowSliceCoM = center_of_mass(Bup(:,:,showSliceUp)>0.5)
 [tiltAngleUp,rotAngleUp] = Find_table_tilt_angle(Bup, voxelSize_up,[21,92],[],false); %[21,92]; [1,65] %true to see table lines
 tiltAngleUp
 rotAngleUp
-
-addpath(genpath('C:\spm\spm8'))
 
 scanUp.voxel.size = voxelSize_up;
 scanUp.voxel.dimensions = size(niiFup.img);
