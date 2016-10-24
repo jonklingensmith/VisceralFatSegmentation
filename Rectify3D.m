@@ -9,7 +9,7 @@ clear all, close all, clc;
 
 % get location of data from user
 dataPath = uigetdir(pwd,'Choose path of data...');
-
+addpath('C:\spm8'); % uses spm8 support functions
 
 % subject: MF0201
 % session: 1012151
@@ -29,10 +29,10 @@ NIFTI_file_name_W_upper_NII = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_00
 NIFTI_file_name_F_lower_NII = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_F_0009\20151012_143006t1vibedixontrap4bh320s009a1001.nii');
 NIFTI_file_name_W_lower_NII = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_0010\20151012_143006t1vibedixontrap4bh320s010a1001.nii');
 
-NIFTI_file_name_F_upper_reslice = strcat(dataPath,'\20151012_143006t1vibedixontrap4bh320s004a1001_resliced.nii');
-NIFTI_file_name_W_upper_reslice = strcat(dataPath,'\20151012_143006t1vibedixontrap4bh320s005a1001_resliced.nii');
-NIFTI_file_name_F_lower_reslice = strcat(dataPath,'\20151012_143006t1vibedixontrap4bh320s009a1001_resliced.nii');
-NIFTI_file_name_W_lower_reslice = strcat(dataPath,'\20151012_143006t1vibedixontrap4bh320s010a1001_resliced.nii');
+NIFTI_file_name_F_upper_reslice = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_F_0004\20151012_143006t1vibedixontrap4bh320s004a1001_resliced.nii');
+NIFTI_file_name_W_upper_reslice = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_0005\20151012_143006t1vibedixontrap4bh320s005a1001_resliced.nii');
+NIFTI_file_name_F_lower_reslice = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_F_0009\20151012_143006t1vibedixontrap4bh320s009a1001_resliced.nii');
+NIFTI_file_name_W_lower_reslice = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_0010\20151012_143006t1vibedixontrap4bh320s010a1001_resliced.nii');
 
 voxelSize_up = [1.40625, 1.40625, 2.5];
 interslice_spacing_fraction = 0.2;
@@ -165,9 +165,9 @@ upperTop = 110;
 
 % NOTE: diaphraim is at slices = 
 % - register from the bottom of T8
-heartMax    = upperTop-64+1;
-heartBottom = upperTop-55+1;
-diaphram    = upperTop-Z_T10_T11+1; 
+heartMax  = upperTop-64+1;
+heartApex = upperTop-53+1;
+diaphram  = upperTop-Z_T9_T10 +1; 
 
 upperSlices = upperTop:-1:upperBottom;
 
@@ -213,6 +213,7 @@ foregroundThreshold2  = 10;
 foregroundThresholdF2 = 145;
 foregroundThresholdV  = 128; %185; %175; %103;
 foregroundThresholdV2 = 230;
+foregroundThresholdW = 40;
 
 nbrThresholdsF = 4; %4; %7;
 nbrThresholdsW = 7; %4; %9;

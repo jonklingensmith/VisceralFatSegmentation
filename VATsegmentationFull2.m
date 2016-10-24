@@ -20,10 +20,15 @@ addpath(genpath(pwd))
 
 %% choose subject and session
 
+% get path of data from user - could get this from saved variables in
+%  saved .mat file at later time?
+dataPath = uigetdir(pwd,'Choose path of data...');
+subjectParamsFilename = strcat(dataPath,'\subject01_i_registered.mat');
+resultsFile = strcat(dataPath,'\subject01_f_results.mat');
+
 %% load data
 %List of 4 intervention subjects: 1, 7, 8, 15
-load subject08_f_registered.mat
-resultsFile = 'subject08_f_results.mat';
+load(subjectParamsFilename);
 
 SEdiamond3x3 = strel('diamond',1);
 SEdiamond5x5 = strel('diamond',2);
@@ -36,7 +41,7 @@ SEdiamond15x15 = strel('diamond',7);
 showProgress = false; %true;
 batchShow    = ~showProgress;
 writeResults = true; %false;
-oneBody = false; %true; % impose largest area for body mask (only do for subject 1)
+oneBody = true; %true; % impose largest area for body mask (only do for subject 1)
 
 niiFup_reslice = load_nii(NIFTI_file_name_F_upper_reslice);
 niiFlo_reslice = load_nii(NIFTI_file_name_F_lower_reslice);
@@ -1553,7 +1558,9 @@ tissues(:,:,1) = 0.667*organs + SCAT + IMAT + aorta +  heart + EAT + IMAT + 0.66
 tissues(:,:,2) = 0.667*TAT + VAT + SCAT + 0.667*IMAT + PAAT + 0.125*heart + CAT + EAT;
 tissues(:,:,3) = 0.5*voids + 0.333*IMAT + aorta + PAAT + 0.125*heart + lungs + EAT + 0.333*CAT;
 
+if i==1
 figure, imshow(tissues);
+end
 
 % lung-heart-fat array
 TTarray = [lungs,heart,CAT];
@@ -1809,7 +1816,9 @@ tissues(:,:,1) = 0.667*organs + SCAT + IMAT + aorta;
 tissues(:,:,2) = VAT + SCAT + 0.667*IMAT + PAAT;
 tissues(:,:,3) = 0.5*voids + 0.333*IMAT + aorta +PAAT;
 
+if i==1
 figure, imshow(tissues);
+end
 
 % if i == (length(upperSlices) + 1)
 % 
