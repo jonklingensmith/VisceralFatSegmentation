@@ -95,14 +95,22 @@ dZ = voxelSize(3) + voxelSpacing(3);
 %% Load header info
 
 old_dims = [V_old.dim(1), V_old.dim(2), V_old.dim(3)]';
+% Extracts the old origin by getting the last column(which is in mm) and
+% dividing by the voxelSize within the matrix, this gives the origin in
+% voxels
 originH = V_old.mat\[0 0 0 1]';
+
+% Extract first three, the last one is just 1.0
 origin = originH(1:3);
+
+% Extract old dX,dY,dZ which is the voxelSize for the old image
 dX_old = abs(V_old.mat(1,1));
 dY_old = abs(V_old.mat(2,2));
 dZ_old = abs(V_old.mat(3,3));
 %origin = [origin(1)/dX_old,origin(2)/dY_old,origin(3)/dZ_old]';  
     
 % convert tilt angle to "grid" value
+% tiltAngle is with respect to mm/mm right now, converts it to voxel/voxel
 Delta_Y = (dZ_old/dY_old)*tand(tiltAngle);
 tiltAngle = atan2d(Delta_Y,1);
 
@@ -114,9 +122,12 @@ end
     
 %% determine necessary values for affine transformation
 
+% Center of old image is (Xc, Yc, Zc); X and Y can be decimals but Zc is
+% not. Units in voxels.
 Xc = (old_dims(1) + 1)/2;
 Yc = (old_dims(2) + 1)/2;
 
+% This does the same thing as ceil...
 if mod(old_dims(3),2)
     % odd case
     Zc = (old_dims(3) + 1)/2;
@@ -130,12 +141,18 @@ Ct = cosd(tiltAngle);
 St = sind(tiltAngle);
 
 if shift2GridFlag
+  % (Zo - Zc)cos(tilt) + (Yc - Yo)sin(tilt)
+  % Zout = (Zo - Zc)*Y/H + (Yc - Yo)*Z/H
+  % Zout = (Z * Y + Y * Z) / H
   Zout = (origin(3) - Zc)*Ct + (Yc - origin(2))*St;
   if (ceil(Zout)-(Zout))>((Zout) - floor(Zout))
       Zout = floor(Zout);
   else
       Zout = ceil(Zout);
   end
+  
+  % Zc = Zo - ((((Zo - Zc)*Y/H + (Yc - Yo)*Z/H) - (Yc -
+  % Yo))sin(tilt))/cos(tilt)
   Zc = origin(3) - (Zout - (Yc - origin(2))*St)/Ct;
 end
 

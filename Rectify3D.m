@@ -34,9 +34,18 @@ NIFTI_file_name_W_upper_reslice = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_
 NIFTI_file_name_F_lower_reslice = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_F_0009\20151012_143006t1vibedixontrap4bh320s009a1001_resliced.nii');
 NIFTI_file_name_W_lower_reslice = strcat(dataPath,'\T1_VIBE_DIXON_TRA_P4_BH_320_W_0010\20151012_143006t1vibedixontrap4bh320s010a1001_resliced.nii');
 
+% Voxel size is in mm.
 voxelSize_up = [1.40625, 1.40625, 2.5];
+
+% Parameter set by MRI. 20% gap between axial slices (3.0mm gap between 
+% center to center)
 interslice_spacing_fraction = 0.2;
+
+% Effective volume is simply the X*Y*Z of each voxel times the spacing
+% factor
 voxelVolume_up = prod(voxelSize_up)*(1+interslice_spacing_fraction);
+
+% Repeat same process for lower MRI image with voxelSize & voxelVolume
 voxelSize_lo = [1.40625, 1.40625, 2.5];
 voxelVolume_lo = prod(voxelSize_lo)*(1+interslice_spacing_fraction);
 %X_shift = -round(2.2/voxelSize_lower(1));
@@ -50,19 +59,35 @@ showSliceLo = 111;
 
 % load fat dominated signal data for upper scan
 niiFup = load_nii(NIFTI_file_name_F_upper);
-niiFupMax = max(max(max(niiFup.img)));
+niiFupMax = max(max(max(niiFup.img))); % Get largest intensity value in fat upper signal
 % load water selected data for upper scan
 niiWup = load_nii(NIFTI_file_name_W_upper);
-niiWupMax = max(max(max(niiWup.img)));
+niiWupMax = max(max(max(niiWup.img))); % Get largest intensity value in water upper signal
 
 % make threshold image from both data sets
 Bup = Make_DIXON_threshold_image(niiFup.img,niiWup.img);
 
+% Center of mass is calculated for body image(Fat & Water signals are
+% combined). Note: This only does a rough estimation because values are
+% given a logical assignment of 1,0 based on if they're above 0.5 or not
 BupCoM = center_of_mass(Bup>0.5)
+
+% Calculate center of mass for body image at axial slice 'showSliceUp'
+% What is this meant for???
 BupShowSliceCoM = center_of_mass(Bup(:,:,showSliceUp)>0.5)
 
+% The [21,92] limits are so specific. Is this a parameter that would change
+% every case? Is there any way to find out what it would be?
 [tiltAngleUp,rotAngleUp] = Find_table_tilt_angle(Bup, voxelSize_up,[21,92],[],false); %[21,92]; [1,65] %true to see table lines
+
+% Tilt angle can be thought of the tilt of the subject's body with respect
+% to the coronal plane. In other words, it is the amount of change in
+% Z(axial slice) for each step in Y (coronal slice) (dZ/dY) (Units is
+% voxels)
 tiltAngleUp
+
+% Rotation Angle up can be thought of the tilt of the subject's body with
+% respect to XXX
 rotAngleUp
 
 scanUp.voxel.size = voxelSize_up;
@@ -72,6 +97,8 @@ scanUp.tiltAngle = tiltAngleUp;
 
 V_F_up = STANCE_load_volume(NIFTI_file_name_F_upper);
 
+% The .mat attribute is a 4x4 affine transformation matrix mapping from 
+% voxel coordinates to real world coordinates.
 V_F_up.mat
 
 tic

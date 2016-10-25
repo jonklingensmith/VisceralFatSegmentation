@@ -36,6 +36,7 @@ if nargin < 3
     gzipFlag  = false;
 end
 
+% No arguments returns a blank V struct and empty array Y
 if ~nargin
     V = struct('fname',   {},...
                'dim',     {},...
@@ -46,23 +47,32 @@ if ~nargin
                'descrip', {},...
                'private', {});
     Y = [];
-           
+% If blank filename, then return blank struct           
 elseif isempty(fileName)
     [V,Y] = STANCE_load_volume;
+    
+    % No idea what the purpose of this is...
     if iscell(fileName), Volume = {Volume}; end %#ok<NODEF,NASGU>
-           
+
+% If the fileName is a struct, then assume its in the correct format and
+% call spm_read_vols to get data
 elseif isstruct(fileName)
     V = fileName;
     Y = spm_read_vols(V);
     
+% If fileName is a cell, call this function for each filename
 elseif iscell(fileName)
     if nargin < 2 || isempty(dataDir)
        [V,Y] = cellfun(@STANCE_load_volume,fileName,'UniformOutput',false);
     else
        [V,Y] = cellfun(@STANCE_load_volume,fileName,dataDir,'UniformOutput',false); 
     end
+    
+% Otherwise assume it is a string fileName
 else
-    [V,Y] = STANCE_load_volume;
+    [V,Y] = STANCE_load_volume; % Load blank V,Y
+    
+    % Loop through each fileName
     for i=1:size(fileName,1)
         n  = 0;
         if nargin < 2 || isempty(dataDir)
@@ -73,6 +83,7 @@ else
         f = fieldnames(v);
         for j=1:numel(f)
             % save header info
+            % Copy header info from v location into V
             [V(1:size(v,1),n+1:n+size(v,2)).(f{j})] = deal(v.(f{j}));
         end
         % extract the volume data and real space locations [mm]
@@ -81,8 +92,10 @@ else
         else
             [Yn,~] = spm_read_vols(v,mask); 
         end
+        
+        % Copies Yn into Y
         if size(v,2)>1 || iscell(Y)
-            Y{n+1:n+size(v,2)} = Yn;          
+            Y{n+1:n+size(v,2)} = Yn;
         else
             Y = Yn;          
         end

@@ -20,6 +20,7 @@ if nargin < 2
     dataDir = [];
 end
 
+% Extract the file out if the extension is .gz
 fileExtension = fileName(end-2:end);
 gzipFileName = []; %#ok<*NASGU>
 if strcmpi(fileExtension,'.gz')
@@ -33,6 +34,7 @@ if strcmpi(fileExtension,'.gz')
 end
 
 % extract the volume header info
+% Simply extracts the volume header info with spm_vol
 if nargin == 2
     filePath = fullfile(dataDir,fileName);
     V = spm_vol(filePath);
