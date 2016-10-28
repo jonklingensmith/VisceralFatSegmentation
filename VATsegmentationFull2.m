@@ -85,6 +85,10 @@ if showProgress && ~batchShow
     figure, imshow(IFraw, []);
 end
 
+% save 3d data for later viewing
+IFraw3d(:,:,i) = IFraw(:,:);
+
+
 IFrawSample = 0*IFraw;
 IFrawSample(50:200,90:230) = IFraw(50:200,90:230);
 IFrawSampleMax = max(max(IFrawSample));
@@ -109,6 +113,10 @@ if level == 1
 elseif level == 2
     IWraw = fliplr(rot90(niiWlo_reslice.img(:,:,slice)));       
 end
+
+% save 3d data for later viewing
+IWraw3d(:,:,i) = IWraw(:,:);
+
 
 if showProgress && ~batchShow
     figure, imshow(IWraw,[]);
