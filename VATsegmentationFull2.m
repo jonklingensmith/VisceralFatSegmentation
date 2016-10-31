@@ -85,10 +85,6 @@ if showProgress && ~batchShow
     figure, imshow(IFraw, []);
 end
 
-% save 3d data for later viewing
-IFraw3d(:,:,i) = IFraw(:,:);
-
-
 IFrawSample = 0*IFraw;
 IFrawSample(50:200,90:230) = IFraw(50:200,90:230);
 IFrawSampleMax = max(max(IFrawSample));
@@ -99,6 +95,9 @@ IFshow = uint8(double(IFraw)/double(IFrawSampleMax)*255);
 if showProgress && ~batchShow
     figure, imshow(IFshow);
 end
+
+% save 3d data for later viewing
+IFraw3d(:,:,i) = IFshow(:,:);
 
 IFrawVeto = (IFshow < vetoFactorF*backgroundThreshold);
 IFrawVeto = logical((1 - ~(IFshow < 0.75*vetoFactorF*backgroundThreshold).*imdilate(~IFrawVeto,ones(7))));
@@ -114,10 +113,6 @@ elseif level == 2
     IWraw = fliplr(rot90(niiWlo_reslice.img(:,:,slice)));       
 end
 
-% save 3d data for later viewing
-IWraw3d(:,:,i) = IWraw(:,:);
-
-
 if showProgress && ~batchShow
     figure, imshow(IWraw,[]);
 end
@@ -132,6 +127,11 @@ IWshow = uint8(double(IWraw)/double(IWrawSampleMax)*255);
 if showProgress && ~batchShow
     figure, imshow(IWshow);
 end
+
+
+% save 3d data for later viewing
+IWraw3d(:,:,i) = IWshow(:,:);
+
 
 %if level == 1
 IWrawVeto = (IWshow < vetoFactorW*backgroundThreshold);
